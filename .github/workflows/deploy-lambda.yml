@@ -13,8 +13,9 @@ jobs:
       id-toke: write
       contents: read
     steps:
-      - run: |
-        echo "the pr was merged"
+      - name: Echo success
+        run: |
+          echo "the pr was merged"
       - uses: actions/checkout@v4
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
