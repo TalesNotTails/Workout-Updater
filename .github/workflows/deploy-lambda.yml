@@ -1,0 +1,28 @@
+name: Deploy to lambda
+
+on:
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  deploy:
+    if: github.event.pull_request.merged == true
+    runs_on: ubuntu-latest
+    permissions:
+      id-toke: write
+      contents: read
+    steps:
+      - run: |
+        echo the pr was merged
+      - uses: actions/checkout@v4
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::116452196725:role/github_workflows_lambda
+          aws-region: us-east-1
+      - name: Deploy Lambda Function
+        uses: aws-actions/aws-lambda-deploy@v1
+        with:
+          function-name: notion-workout-updater
+          code-artifacts-dir: ./dist
