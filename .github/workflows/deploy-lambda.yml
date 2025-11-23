@@ -23,7 +23,7 @@ jobs:
           role-to-assume: arn:aws:iam::116452196725:role/github_workflows_lambda
           aws-region: us-east-1
       - name: zip repo
-        run: zip -r workout_updater ./dist
+        run: zip -r ./dist workout_updater
       - name: Deploy Lambda Function
         uses: aws-actions/aws-lambda-deploy@v1
         with:
