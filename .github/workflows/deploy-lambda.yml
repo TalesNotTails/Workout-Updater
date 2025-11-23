@@ -24,6 +24,8 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::116452196725:role/github_workflows_lambda
           aws-region: ${{ env.AWS_REGION }}
+      - name: Checkout
+        uses: actions/checkout@v6.0.0
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
