@@ -8,9 +8,9 @@ on:
 jobs:
   deploy:
     if: github.event.pull_request.merged == true
-    runs_on: ubuntu-latest
+    runs-on: ubuntu-latest
     permissions:
-      id-toke: write
+      id-token: write
       contents: read
     steps:
       - name: Echo success
