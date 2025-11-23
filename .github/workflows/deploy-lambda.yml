@@ -5,6 +5,12 @@ on:
     types:
       - closed
 
+env:
+  AWS_REGION: "us-east-1" #Change to reflect your Region
+  FUNCTION_NAME: "updateNotionWorkouts"
+  PYTHON_VERSION: "3.12.12" #Change to python version
+  PYTHON_VERSION_SHORT: "3.12"
+
 jobs:
   deploy:
     if: github.event.pull_request.merged == true
@@ -13,18 +19,35 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - name: Echo success
-        run: |
-          echo "the pr was merged"
-      - uses: actions/checkout@v4
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::116452196725:role/github_workflows_lambda
-          aws-region: us-east-1
-      - name: Deploy Lambda Function
-        uses: aws-actions/aws-lambda-deploy@v1
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          function-name: updateNotionWorkouts
-          code-artifacts-dir: ./workout_updater
-          layers: NotionLayer
+          python-version: ${{ env.PYTHON_VERSION }} 
+      - name: Install pipx
+        run: |
+          apt update
+          apt install pipx
+          pipx ensurepath
+      - name: Install poetry
+        run: |
+          pipx install poetry==2.2.1
+          poetry config virtualenvs.in-project true
+      - name: Install libraries
+        run: |
+          poetry install
+          cp -r .venv/lib/python${{ env.PYTHON_VERSION_SHORT }}/site-packages/* ./python
+          zip -r workout_updater_libs.zip ./python > /dev/null
+      - name: Deploy Lambda Layer
+        id: lambda_layer
+        run: |
+          aws lambda publish-layer-version --layer-name workout-update-layer --zip-file fileb://workout_updater_libs.zip --compatible-runtimes python${{ env.PYTHON_VERSION_SHORT }} >> $GITHUB_OUTPUT
+      - name: Update Lambda Function
+        run: |
+          zip -r workout_updater_code.zip ./workout_updater
+          aws lambda update-function-configuration --function-name ${{ env.FUNCTION_NAME }} --layers ${{ fromJSON(steps.lambda_layer.outputs).LayerVersionArn }}
+          aws lambda update-function-code --function-name ${{ env.FUNCTION_NAME }} --zip-file fileb://workout_updater_code.zip
