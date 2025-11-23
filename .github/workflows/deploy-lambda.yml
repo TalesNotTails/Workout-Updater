@@ -8,13 +8,14 @@ on:
 jobs:
   deploy:
     if: github.event.pull_request.merged == true
-    runs_on: ubuntu-latest
+    runs-on: ubuntu-latest
     permissions:
-      id-toke: write
+      id-token: write
       contents: read
     steps:
-      - run: |
-        echo the pr was merged
+      - name: Echo success
+        run: |
+          echo "the pr was merged"
       - uses: actions/checkout@v4
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
