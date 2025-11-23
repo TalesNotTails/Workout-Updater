@@ -8,12 +8,12 @@ on:
 jobs:
   deploy:
     if: github.event.pull_request.merged == true
-    runs_on: ubuntu-latest
+    runs-on: ubuntu-latest
     permissions:
-      id-toke: write
+      id-token: write
       contents: read
     steps:
-      - name: Run echo command
+      - name: Echo success
         run: |
           echo "the pr was merged"
       - uses: actions/checkout@v4
