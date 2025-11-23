@@ -7,4 +7,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: command
-        run: ls -l
+        run: |
+          echo "Hello World"
+          ls -l
