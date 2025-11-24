@@ -42,6 +42,7 @@ jobs:
       - name: Install libraries
         run: |
           poetry install
+          mkdir ./python
           cp -r .venv/lib/python${{ env.PYTHON_VERSION_SHORT }}/site-packages/* ./python
           zip -r workout_updater_libs.zip ./python > /dev/null
       - name: Deploy Lambda Layer
