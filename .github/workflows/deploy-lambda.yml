@@ -48,9 +48,10 @@ jobs:
       - name: Deploy Lambda Layer
         id: lambda_layer
         run: |
-          aws lambda publish-layer-version --layer-name workout-update-layer --zip-file fileb://workout_updater_libs.zip --compatible-runtimes python${{ env.PYTHON_VERSION_SHORT }} >> $GITHUB_OUTPUT
+          PUBLISH_LAYER_OUTPUT=$(aws lambda publish-layer-version --layer-name workout-update-layer --zip-file fileb://workout_updater_libs.zip --compatible-runtimes python${{ env.PYTHON_VERSION_SHORT }})
+          echo "json_data=${ fromJSON(PUBLISH_LAYER_OUTPUT) } >> $GITHUB_OUTPUT
       - name: Update Lambda Function
         run: |
           zip -r workout_updater_code.zip ./workout_updater
-          aws lambda update-function-configuration --function-name ${{ env.FUNCTION_NAME }} --layers ${{ fromJSON(steps.lambda_layer.outputs).LayerVersionArn }}
+          aws lambda update-function-configuration --function-name ${{ env.FUNCTION_NAME }} --layers ${{ fromJSON(steps.lambda_layer.outputs.json_data).LayerVersionArn }}
           aws lambda update-function-code --function-name ${{ env.FUNCTION_NAME }} --zip-file fileb://workout_updater_code.zip
