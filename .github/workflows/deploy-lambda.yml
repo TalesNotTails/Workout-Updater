@@ -54,7 +54,7 @@ jobs:
           --zip-file fileb://workout_updater_libs.zip \
           --compatible-runtimes python${{ env.PYTHON_VERSION_SHORT }} \
           --output json)
-          echo "json_data=$PUBLISH_LAYER_OUTPUT"
+          echo "json_data=${{ toJSON(PUBLISH_LAYER_OUTPUT) }}"
           echo "json_data=$PUBLISH_LAYER_OUTPUT" >> $GITHUB_OUTPUT
       - name: Update Lambda Function
         run: |
