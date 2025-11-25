@@ -56,7 +56,7 @@ jobs:
           --output json | tr -d '\n')
           echo "json_data=$PUBLISH_LAYER_OUTPUT"
           echo "json_data=$PUBLISH_LAYER_OUTPUT" >> $GITHUB_OUTPUT
-          sleep 5
+          sleep 15
       - name: Update Lambda Function
         run: |
           zip -r workout_updater_code.zip ./workout_updater
