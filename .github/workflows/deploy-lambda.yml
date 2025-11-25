@@ -4,6 +4,7 @@ on:
   pull_request:
     types:
       - closed
+  workflow_dispatch:
 
 env:
   AWS_REGION: "us-east-1" #Change to reflect your Region
