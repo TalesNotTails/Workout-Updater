@@ -59,6 +59,7 @@ jobs:
           sleep 60
       - name: Update Lambda Function
         run: |
+          aws lambda get-function --function-name ${{ env.FUNCTION_NAME }} --query 'Configuration.[State, LastUpdateStatus]'
           zip -r workout_updater_code.zip ./workout_updater
           aws lambda update-function-configuration --function-name ${{ env.FUNCTION_NAME }} --layers ${{ fromJSON(steps.lambda_layer.outputs.json_data).LayerVersionArn }}
           aws lambda update-function-code --function-name ${{ env.FUNCTION_NAME }} --zip-file fileb://workout_updater_code.zip
