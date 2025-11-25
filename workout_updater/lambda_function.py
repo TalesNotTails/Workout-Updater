@@ -3,6 +3,8 @@ from dotenv import load_dotenv
 from datetime import datetime,timedelta
 import os
 
+# Hello from github!
+
 def add_page(props):
     # Update the number field in the database
     notion.pages.create(
