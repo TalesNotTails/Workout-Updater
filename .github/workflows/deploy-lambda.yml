@@ -56,7 +56,7 @@ jobs:
           --output json | tr -d '\n')
           echo "json_data=$PUBLISH_LAYER_OUTPUT"
           echo "json_data=$PUBLISH_LAYER_OUTPUT" >> $GITHUB_OUTPUT
-          sleep 60
+          sleep 180
       - name: Update Lambda Function
         run: |
           aws lambda get-function --function-name ${{ env.FUNCTION_NAME }} --query 'Configuration.[State, LastUpdateStatus]'
