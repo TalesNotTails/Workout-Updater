@@ -44,8 +44,8 @@ jobs:
         run: |
           poetry install
           mkdir ./python
-          cp -r .venv/* ./python    
-          zip -r workout_updater_libs.zip ./python > /dev/null
+          cp -r .venv/lib/python${{ PYTHON_VERSION_SHORT }}/site-packages/* ./python    
+          zip -r9 workout_updater_libs.zip python > /dev/null
       - name: Deploy Lambda Layer
         id: lambda_layer
         run: |
@@ -59,7 +59,8 @@ jobs:
           echo "json_data=$PUBLISH_LAYER_OUTPUT" >> $GITHUB_OUTPUT
       - name: Update Lambda Function
         run: |
-          zip -r workout_updater_code.zip ./workout_updater > /dev/null
+          cd workout_updater
+          zip -r ../workout_updater_code.zip . > /dev/null
           aws lambda update-function-configuration --function-name ${{ env.FUNCTION_NAME }} --layers ${{ fromJSON(steps.lambda_layer.outputs.json_data).LayerVersionArn }} > /dev/null
           sleep 10
           aws lambda update-function-code --function-name ${{ env.FUNCTION_NAME }} --zip-file fileb://workout_updater_code.zip > /dev/null
