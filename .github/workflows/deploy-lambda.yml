@@ -44,7 +44,7 @@ jobs:
         run: |
           poetry install
           mkdir ./python
-          cp -r .venv/lib/python${{ env.PYTHON_VERSION_SHORT }}/site-packages/* ./python
+          cp -r .venv/* ./python    
           zip -r workout_updater_libs.zip ./python > /dev/null
       - name: Deploy Lambda Layer
         id: lambda_layer
@@ -54,6 +54,7 @@ jobs:
           --zip-file fileb://workout_updater_libs.zip \
           --compatible-runtimes python${{ env.PYTHON_VERSION_SHORT }} \
           --output json | tr -d '\n')
+          
           echo "json_data=$PUBLISH_LAYER_OUTPUT"
           echo "json_data=$PUBLISH_LAYER_OUTPUT" >> $GITHUB_OUTPUT
       - name: Update Lambda Function
