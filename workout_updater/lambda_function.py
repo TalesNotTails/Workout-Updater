@@ -16,8 +16,8 @@ def lambda_handler(event=None, context=None):
 
     payload = { 
         "filter": { 
-            "timestamp": "created_time",
-            "created_time": {
+            "property": "Date",
+            "date": {
                 "past_week": {}
             }
         } 
