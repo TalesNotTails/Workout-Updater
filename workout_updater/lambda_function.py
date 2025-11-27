@@ -1,41 +1,39 @@
-from notion_client import Client
 from dotenv import load_dotenv
 from datetime import datetime,timedelta
+import requests
 import os
+import json
 
-# Hello from github!
-
-def add_page(props):
-    # Update the number field in the database
-    notion.pages.create(
-        parent={
-            'database_id':DATABASE_ID
-        },
-        properties=props
-    )
-
-def lambda_handler(event, context):
+def lambda_handler(event=None, context=None):
 
     # Load environment variables
     load_dotenv()
     NOTION_TOKEN = os.getenv("NOTION_TOKEN")
     DATABASE_ID = os.getenv("DATABASE_ID")
+    DATASOURCE_ID = os.getenv("DATASOURCE_ID")
 
-    # Initialize Notion client
-    notion = Client(auth=NOTION_TOKEN)
+    url = f"https://api.notion.com/v1/data_sources/{DATASOURCE_ID}/query"
 
-    # Get pages from last week
-    response = notion.databases.query(
-        database_id=DATABASE_ID,
-        filter={
-            "property": "Date", 
-            "date": {
+    payload = { 
+        "filter": { 
+            "timestamp": "created_time",
+            "created_time": {
                 "past_week": {}
             }
-        }
-    )
-    
-    entries = response.get("results", [])
+        } 
+    }
+    headers = {
+        "accept": "application/json",
+        "content-type": "application/json",
+        "Authorization": f"Bearer {NOTION_TOKEN}",
+        "Notion-Version": "2025-09-03"
+    }
+
+    response = requests.post(url, json=payload, headers=headers)
+
+    json_data = json.loads(response.text)
+
+    entries = json_data.get("results", [])
 
     for entry in entries:
         if entry['properties']['Status']['checkbox'] is True:
@@ -51,25 +49,27 @@ def lambda_handler(event, context):
         entry['properties']['Date']['date']['start'] = new_entry_date.strftime('%Y-%m-%d')
         entry['properties']['Status']['checkbox'] = False
 
-        new_entry = {
-            'Split': {
-                'type': 'select',
-                'select': ''
+        url = "https://api.notion.com/v1/pages"
+
+        payload = { 
+            "parent": {
+                "type": "data_source_id",
+                "data_source_id": DATASOURCE_ID
             },
-            'Reps': {
-
-            },
-            'lbs': {
-
-            }
-
+            "properties": entry['properties']
+        }
+        headers = {
+            "accept": "application/json",
+            "content-type": "application/json",
+            "Authorization": f"Bearer {NOTION_TOKEN}",
+            "Notion-Version": "2025-09-03"
         }
 
-        result = notion.pages.create(
-            parent={
-                "database_id": DATABASE_ID
-            },
-            properties=entry['properties']
-        )
+        response = requests.post(url, json=payload, headers=headers)
 
-        print(result)
+        json_data = json.loads(response.text)
+
+        print(f"{json_data['properties']['Date']['date']['start']},{json_data['properties']['Exercise']['title'][0]['plain_text']},{json_data['properties']['Person']['select']['name']}")
+
+if __name__ == "__main__":
+    lambda_handler()
