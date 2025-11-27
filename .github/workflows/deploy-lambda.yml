@@ -61,7 +61,7 @@ jobs:
       - name: Update Lambda Function
         run: |
           cd workout_updater
-          zip -r ../workout_updater_code.zip . > /dev/null
+          zip -r workout_updater_code.zip . > /dev/null
           aws lambda update-function-configuration --function-name ${{ env.FUNCTION_NAME }} --layers ${{ fromJSON(steps.lambda_layer.outputs.json_data).LayerVersionArn }} > /dev/null
           sleep 10
-          aws lambda update-function-code --function-name ${{ env.FUNCTION_NAME }} --zip-file fileb://workout_updater_code.zip > /dev/null
+          aws lambda update-function-code --function-name ${{ env.FUNCTION_NAME }} --zip-file fileb://../workout_updater_code.zip > /dev/null
