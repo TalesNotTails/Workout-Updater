@@ -51,7 +51,7 @@ jobs:
         run: |
           PUBLISH_LAYER_OUTPUT=$(aws lambda publish-layer-version \
           --layer-name workout-update-layer \
-          --zip-file fileb://workout_updater_libs.zip \
+          --zip-file fileb://../workout_updater_libs.zip \
           --compatible-runtimes python${{ env.PYTHON_VERSION_SHORT }} \
           --output json | tr -d '\n')
           
