@@ -11,7 +11,7 @@ env:
   FUNCTION_NAME: "updateNotionWorkouts"
   PYTHON_VERSION: "3.12.12" #Change to python version
   PYTHON_VERSION_SHORT: "3.12"
-  ACCESS_TOKEN: ${{ secrets.BOT_ACCESS_TOKEN }}
+  # ACCESS_TOKEN: ${{ secrets.BOT_ACCESS_TOKEN }}
 
 jobs:
   deploy:
@@ -83,7 +83,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6.0.0
         with:
-          token: ${{ secrets.ACCESS_TOKEN }}
+          token: ${{ secrets.BOT_ACCESS_TOKEN }}
         
       - name: Configure git
         run: |
