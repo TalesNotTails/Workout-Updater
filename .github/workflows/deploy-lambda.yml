@@ -76,7 +76,7 @@ jobs:
           aws lambda update-function-code --function-name ${{ env.FUNCTION_NAME }} --zip-file fileb://workout_updater_code.zip > /dev/null
 
   tag:
-    runs-on: ubunt-latest
+    runs-on: ubuntu-latest
     needs: deploy
     steps:
 
