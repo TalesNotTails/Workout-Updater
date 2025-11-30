@@ -11,35 +11,42 @@ env:
   FUNCTION_NAME: "updateNotionWorkouts"
   PYTHON_VERSION: "3.12.12" #Change to python version
   PYTHON_VERSION_SHORT: "3.12"
+  ACCESS_TOKEN: ${{ secrets.BOT_ACCESS_TOKEN }}
 
 jobs:
   deploy:
-    # if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     permissions:
       id-token: write
       contents: read
     steps:
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::116452196725:role/github_workflows_lambda
           aws-region: ${{ env.AWS_REGION }}
+
       - name: Checkout
         uses: actions/checkout@v6.0.0
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }} 
+
       - name: Install pipx
         run: |
           sudo apt update
           sudo apt install pipx
           pipx ensurepath
+
       - name: Install poetry
         run: |
           pipx install poetry==2.2.1
           poetry config virtualenvs.in-project true
+
       - name: Install libraries
         run: |
           poetry install
@@ -47,6 +54,7 @@ jobs:
           cp -r .venv/lib/python${{ env.PYTHON_VERSION_SHORT }}/site-packages/* ./python    
           zip -r workout_updater_libs.zip python > /dev/null
           ls -l
+
       - name: Deploy Lambda Layer
         id: lambda_layer
         run: |
@@ -58,6 +66,7 @@ jobs:
           
           echo "json_data=$PUBLISH_LAYER_OUTPUT"
           echo "json_data=$PUBLISH_LAYER_OUTPUT" >> $GITHUB_OUTPUT
+
       - name: Update Lambda Function
         run: |
           cd workout_updater
@@ -65,3 +74,51 @@ jobs:
           aws lambda update-function-configuration --function-name ${{ env.FUNCTION_NAME }} --layers ${{ fromJSON(steps.lambda_layer.outputs.json_data).LayerVersionArn }} > /dev/null
           sleep 10
           aws lambda update-function-code --function-name ${{ env.FUNCTION_NAME }} --zip-file fileb://workout_updater_code.zip > /dev/null
+
+  tag:
+    runs-on: ubunt-latest
+    needs: deploy
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v6.0.0
+        with:
+          token: ${{ secrets.ACCESS_TOKEN }}
+        
+      - name: Configure git
+        run: |
+          git config user.name "CSHL-GH-Actions"
+          git config user.email "c.jetta2014+github_actions@gmail.com"
+
+      - name: Get tags
+        run: |
+          GIT_TAGS=$(git tag --sort=version:refname)
+          GIT_TAG_LATEST=$(echo "$GIT_TAGS" | tail -n 1)
+          GIT_TAG_LATEST=$(echo "$GIT_TAG_LATEST" | sed 's/^v//')
+
+          if [ -z "$GIT_TAG_LATEST" ]; then
+            GIT_TAG_LATEST="v0.0.0"
+          fi
+
+      - name: Increment Patch
+        if: contains(github.event.pull_request.labels.*.name, 'patch')
+        run: |
+          echo "Incrementing patch version"
+          VERSION_NEXT="$(echo "$GIT_TAG_LATEST" | awk -F. '{$NF++; print $1"."$2"."$NF}')"
+
+      - name: Increment Feature
+        if: contains(github.event.pull_request.labels.*.name, 'minor')
+        run: |
+          echo "Incrementing minor version
+          VERSION_NEXT="$(echo "$GIT_TAG_LATEST" | awk -F. '{$2++; $3=0; print $1"."$2"."$3}')"
+
+      - name: Increment Breaking
+        if: contains(github.event.pull_request.labels.*.name, 'major')
+        run: |
+          echo "Incrementing major version"
+          VERSION_NEXT="$(echo "$GIT_TAG_LATEST" | awk -F. '{$1++; $2=0; $3=0; print $1"."$2"."$3}')"
+
+      - name: Push tag to main
+        run: |
+          git tag -a "v$VERSION_NEXT"
+          git push origin main --follow-tags
