@@ -115,7 +115,7 @@ jobs:
       - name: Increment Breaking
         if: contains(github.event.pull_request.labels.*.name, 'major')
         run: |
-          echo "Incrementing breaking version"
+          echo "Incrementing major version"
           VERSION_NEXT="$(echo "$GIT_TAG_LATEST" | awk -F. '{$1++; $2=0; $3=0; print $1"."$2"."$3}')"
 
       - name: Push tag to main
