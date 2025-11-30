@@ -120,5 +120,6 @@ jobs:
 
       - name: Push tag to main
         run: |
+          echo "$VERSION_NEXT"
           git tag "v$VERSION_NEXT"
           git push origin main --follow-tags
