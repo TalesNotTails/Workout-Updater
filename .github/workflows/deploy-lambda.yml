@@ -101,25 +101,31 @@ jobs:
           fi
 
       - name: Increment Patch
+        id: increment
         if: contains(github.event.pull_request.labels.*.name, 'patch')
         run: |
           echo "Incrementing patch version"
           VERSION_NEXT="$(echo "$GIT_TAG_LATEST" | awk -F. '{$NF++; print $1"."$2"."$NF}')"
+          echo "new_tag=$VERSION_NEXT" >> $GITHUB_OUTPUT
 
       - name: Increment Feature
+        id: increment
         if: contains(github.event.pull_request.labels.*.name, 'minor')
         run: |
           echo "Incrementing minor version
           VERSION_NEXT="$(echo "$GIT_TAG_LATEST" | awk -F. '{$2++; $3=0; print $1"."$2"."$3}')"
+          echo "new_tag=$VERSION_NEXT" >> $GITHUB_OUTPUT
 
       - name: Increment Breaking
+        id: increment
         if: contains(github.event.pull_request.labels.*.name, 'major')
         run: |
           echo "Incrementing major version"
           VERSION_NEXT="$(echo "$GIT_TAG_LATEST" | awk -F. '{$1++; $2=0; $3=0; print $1"."$2"."$3}')"
+          echo "new_tag=$VERSION_NEXT" >> $GITHUB_OUTPUT
 
       - name: Push tag to main
         run: |
-          echo "$VERSION_NEXT"
-          git tag "v$VERSION_NEXT"
+          echo ${{ steps.increment.outputs.new_tag }}
+          git tag "v${{ steps.increment.outputs.new_tag }}"
           git push origin main --follow-tags
