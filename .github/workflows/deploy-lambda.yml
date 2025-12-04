@@ -101,25 +101,41 @@ jobs:
           fi
 
       - name: Increment Patch
+        id: patch_inc
         if: contains(github.event.pull_request.labels.*.name, 'patch')
         run: |
           echo "Incrementing patch version"
           VERSION_NEXT="$(echo "$GIT_TAG_LATEST" | awk -F. '{$NF++; print $1"."$2"."$NF}')"
+          echo "new_tag=$VERSION_NEXT" >> $GITHUB_OUTPUT
 
-      - name: Increment Feature
+      - name: Increment Minor
+        id: minor_inc
         if: contains(github.event.pull_request.labels.*.name, 'minor')
         run: |
           echo "Incrementing minor version
           VERSION_NEXT="$(echo "$GIT_TAG_LATEST" | awk -F. '{$2++; $3=0; print $1"."$2"."$3}')"
+          echo "new_tag=$VERSION_NEXT" >> $GITHUB_OUTPUT
 
-      - name: Increment Breaking
+      - name: Increment Major
+        id: major_inc
         if: contains(github.event.pull_request.labels.*.name, 'major')
         run: |
           echo "Incrementing major version"
           VERSION_NEXT="$(echo "$GIT_TAG_LATEST" | awk -F. '{$1++; $2=0; $3=0; print $1"."$2"."$3}')"
+          echo "new_tag=$VERSION_NEXT" >> $GITHUB_OUTPUT
 
       - name: Push tag to main
         run: |
-          echo "$VERSION_NEXT"
-          git tag "v$VERSION_NEXT"
-          git push origin main --follow-tags
+          if [[ -n ${{ steps.patch_inc.outputs.new_tag }} ]]; then
+            new_tag=${{ steps.patch_inc.outputs.new_tag }}
+          elif [[ -n ${{ steps.minor_inc.outputs.new_tag }} ]]; then
+            new_tag=${{ steps.minor_inc.outputs.new_tag }}
+          elif [[ -n ${{ steps.major_inc.outputs.new_tag }}]]; then
+            new_tag=${{ steps.major_inc.outputs.new_tag }}
+          else
+            echo "Bad label. Not setting version"
+          fi
+
+          echo "$new_tag"
+          git tag "v$new_tag"
+          git push --tags
