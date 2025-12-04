@@ -126,7 +126,7 @@ jobs:
 
       - name: Push tag to main
         run: |
-          if [[ -n ${{ steps.patch_inc.outputs.new_tag }}" ]]; then
+          if [[ -n ${{ steps.patch_inc.outputs.new_tag }} ]]; then
             new_tag=${{ steps.patch_inc.outputs.new_tag }}
           elif [[ -n ${{ steps.minor_inc.outputs.new_tag }} ]]; then
             new_tag=${{ steps.minor_inc.outputs.new_tag }}
