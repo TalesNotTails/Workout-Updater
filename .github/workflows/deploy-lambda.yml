@@ -91,6 +91,7 @@ jobs:
           git config user.email "c.jetta2014+github_actions@gmail.com"
 
       - name: Get tags
+        id: get_tag
         run: |
           GIT_TAGS=$(git tag --sort=version:refname)
           GIT_TAG_LATEST=$(echo "$GIT_TAGS" | tail -n 1)
@@ -100,12 +101,14 @@ jobs:
             GIT_TAG_LATEST="v0.0.0"
           fi
 
+          echo "latest_tag=$GIT_TAG_LATEST" >> GITHUB_OUTPUT
+
       - name: Increment Patch
         id: patch_inc
         if: contains(github.event.pull_request.labels.*.name, 'patch')
         run: |
           echo "Incrementing patch version"
-          VERSION_NEXT="$(echo "$GIT_TAG_LATEST" | awk -F. '{$NF++; print $1"."$2"."$NF}')"
+          VERSION_NEXT="$(echo "${{ steps.get_tag.outputs.latest_tag }}" | awk -F. '{$NF++; print $1"."$2"."$NF}')"
           echo "new_tag=$VERSION_NEXT" >> $GITHUB_OUTPUT
 
       - name: Increment Minor
@@ -113,7 +116,7 @@ jobs:
         if: contains(github.event.pull_request.labels.*.name, 'minor')
         run: |
           echo "Incrementing minor version
-          VERSION_NEXT="$(echo "$GIT_TAG_LATEST" | awk -F. '{$2++; $3=0; print $1"."$2"."$3}')"
+          VERSION_NEXT="$(echo "${{ steps.get_tag.outputs.latest_tag }}" | awk -F. '{$2++; $3=0; print $1"."$2"."$3}')"
           echo "new_tag=$VERSION_NEXT" >> $GITHUB_OUTPUT
 
       - name: Increment Major
@@ -121,7 +124,7 @@ jobs:
         if: contains(github.event.pull_request.labels.*.name, 'major')
         run: |
           echo "Incrementing major version"
-          VERSION_NEXT="$(echo "$GIT_TAG_LATEST" | awk -F. '{$1++; $2=0; $3=0; print $1"."$2"."$3}')"
+          VERSION_NEXT="$(echo "${{ steps.get_tag.outputs.latest_tag }}" | awk -F. '{$1++; $2=0; $3=0; print $1"."$2"."$3}')"
           echo "new_tag=$VERSION_NEXT" >> $GITHUB_OUTPUT
 
       - name: Push tag to main
