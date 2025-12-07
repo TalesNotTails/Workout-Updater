@@ -94,8 +94,10 @@ jobs:
         id: get_tag
         run: |
           GIT_TAGS=$(git tag --sort=version:refname)
+          echo "$GIT_TAGS"
           GIT_TAG_LATEST=$(echo "$GIT_TAGS" | tail -n 1)
           GIT_TAG_LATEST=$(echo "$GIT_TAG_LATEST" | sed 's/^v//')
+          echo"$GIT_TAG_LATEST"
 
           if [ -z "$GIT_TAG_LATEST" ]; then
             GIT_TAG_LATEST="v0.0.0"
